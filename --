@@ -1,0 +1,41 @@
+#include <iostream>
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
+int main() {
+    std::string sourceDirectory = "шлях_до_вихідного_каталогу";
+    std::string destinationDirectory = "шлях_до_цільового_каталогу";
+
+    // Перевіряємо, чи існує вихідний каталог
+    if (!fs::exists(sourceDirectory)) {
+        std::cout << "Вихідний каталог не існує.\n";
+        return 0;
+    }
+
+    // Перевіряємо, чи існує цільовий каталог. Якщо не існує, створюємо його
+    if (!fs::exists(destinationDirectory)) {
+        fs::create_directory(destinationDirectory);
+    }
+
+    try {
+        // Переміщаємо файли з вихідного каталогу в цільовий
+        fs::recursive_directory_iterator iter(sourceDirectory);
+        fs::recursive_directory_iterator end;
+
+        while (iter != end) {
+            if (fs::is_regular_file(iter->path())) {
+                fs::path sourceFile = iter->path();
+                fs::path destinationFile = destinationDirectory + "\\" + sourceFile.filename().string();
+                fs::rename(sourceFile, destinationFile);
+            }
+            ++iter;
+        }
+
+        std::cout << "Файли були успішно переміщені.\n";
+    } catch (const std::exception& ex) {
+        std::cout << "Виникла помилка під час переміщення файлів: " << ex.what() << std::endl;
+    }
+
+    return 0;
+}
